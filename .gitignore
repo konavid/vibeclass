@@ -1,0 +1,79 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files - 모든 env 파일 무시
+.env
+.env.*
+.env*.local
+.env.local
+.env.development
+.env.production
+.env.production.local
+!.env.local.example
+
+# credentials & secrets
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+
+# key files
+.key/
+*.pem
+*.key
+
+# deployment & config (sensitive)
+DEPLOYMENT.md
+ecosystem.config.js
+.claude/*
+!.claude/rules/
+!.claude/CLAUDE.md
+
+# internal docs
+edu.md
+biz.md
+order.md
+
+# temp files
+1.html
+public/1.html
+*.pdf
+
+# deploy scripts
+deploy.sh
+deploy-remote.sh
+
+# verification files
+public/naver*.html
+public/google*.html
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,909 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      Int                      @id @default(autoincrement())
+  email                   String                   @unique
+  name                    String
+  phone                   String?
+  role                    String                   @default("customer")
+  password                String?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  emailVerified           DateTime?
+  image                   String?
+  marketingConsent        Boolean                  @default(false)
+  nickname                String?
+  privacyAgreed           Boolean                  @default(false)
+  profileCompleted        Boolean                  @default(false)
+  termsAgreed             Boolean                  @default(false)
+  deactivatedAt           DateTime?
+  isActive                Boolean                  @default(true)
+  accounts                Account[]
+  blogPosts               BlogPost[]
+  cohortComments          CohortComment[]
+  cohortPosts             CohortPost[]
+  qnaAnswers              CohortQna[]              @relation("QnaAnswers")
+  qnaQuestions            CohortQna[]              @relation("QnaQuestions")
+  consultations           Consultation[]
+  emailLogs               EmailLog[]
+  enrollments             Enrollment[]
+  reviewedApplications    InstructorApplication[]  @relation("ApplicationReviewer")
+  instructorApplication   InstructorApplication?
+  instructorConsultations InstructorConsultation[]
+  instructor              Instructor?
+  notificationLogs        NotificationLog[]
+  payments                Payment[]
+  reviews                 Review[]
+  sessions                Session[]
+  smsLogs                 SmsLog[]
+  smsNotificationLogs     SmsNotificationLog[]
+  chatMessages            ChatMessage[]
+  videoPurchases          VideoPurchase[]
+  digitalProductPurchases DigitalProductPurchase[]
+  taskProgress            StudentTaskProgress[]
+  execDiaries             ExecDiary[]
+
+  @@map("users")
+}
+
+model Account {
+  id                Int     @id @default(autoincrement())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  courses   Course[]
+
+  @@map("categories")
+}
+
+model Instructor {
+  id                Int                      @id @default(autoincrement())
+  name              String
+  email             String                   @unique
+  phone             String?
+  bio               String?                  @db.Text
+  expertise         String?                  @db.Text
+  imageUrl          String?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+  userId            Int?                     @unique
+  isActive          Boolean                  @default(true)
+  consultingPrice   Int                      @default(0)
+  consultingEnabled Boolean                  @default(true)
+  courses         Course[]
+  consultations   InstructorConsultation[]
+  user            User?                    @relation(fields: [userId], references: [id])
+  videos          Video[]
+  digitalProducts DigitalProduct[]
+
+  @@map("instructors")
+}
+
+model Course {
+  id             Int                      @id @default(autoincrement())
+  title          String
+  description    String                   @db.Text
+  curriculum     String                   @db.Text
+  price          Int
+  capacity       Int                      @default(30)
+  categoryId     Int
+  instructorId   Int?
+  status         String                   @default("active")
+  thumbnailUrl   String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  isFree         Boolean                  @default(false)
+  isRequired     Boolean                  @default(false)
+  level          String                   @default("basic")
+  order          Int                      @default(0)
+  parentId       Int?
+  instructions   String?                  @db.Text
+  approvalNote   String?                  @db.Text
+  approvalStatus String                   @default("approved")
+  approvedAt     DateTime?
+  approvedBy     Int?
+  submittedAt    DateTime?
+  courseType     String                   @default("online") // online, offline
+  location       String?                  // 장소명 (오프라인 강의용)
+  locationAddress String?                 // 상세 주소
+  locationMapUrl String?                  @db.Text // 지도 URL 또는 iframe embed 코드
+  locationLat    Float?                   // 위도
+  locationLng    Float?                   // 경도
+  locationNote   String?                  @db.Text // 장소 안내 메모
+  youtubeUrls    Json?                    // 참조 유튜브 링크 배열 ["url1", "url2", ...]
+  descriptionImages Json?                 // 설명 프로모션 이미지 배열 (최대 3장)
+  curriculumImages  Json?                 // 커리큘럼 프로모션 이미지 배열 (최대 3장)
+  prerequisites  CoursePrerequisite[]     @relation("CoursePrerequisites")
+  requiredFor    CoursePrerequisite[]     @relation("RequiredForCourses")
+  schedules      CourseSchedule[]
+  category       Category                 @relation(fields: [categoryId], references: [id])
+  instructor     Instructor?              @relation(fields: [instructorId], references: [id])
+  parent         Course?                  @relation("CourseHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children       Course[]                 @relation("CourseHierarchy")
+  enrollments      Enrollment[]
+  consultations    InstructorConsultation[]
+  reviews          Review[]
+  curriculumTasks  CurriculumTask[]
+  execDiaries      ExecDiary[]
+
+  @@index([categoryId])
+  @@index([instructorId])
+  @@index([parentId])
+  @@map("courses")
+}
+
+model CoursePrerequisite {
+  id             Int      @id @default(autoincrement())
+  courseId       Int
+  prerequisiteId Int
+  isRequired     Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  course         Course   @relation("CoursePrerequisites", fields: [courseId], references: [id], onDelete: Cascade)
+  prerequisite   Course   @relation("RequiredForCourses", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, prerequisiteId])
+  @@index([courseId])
+  @@index([prerequisiteId])
+  @@map("course_prerequisites")
+}
+
+model CourseSchedule {
+  id              Int              @id @default(autoincrement())
+  courseId        Int
+  startDate       DateTime
+  endDate         DateTime
+  status          String           @default("scheduled")
+  createdAt       DateTime         @default(now())
+  cohort          Int              @default(1)
+  meetId          String?
+  meetLink        String?
+  kakaoTalkLink   String?
+  cohortComments  CohortComment[]
+  cohortMaterials CohortMaterial[]
+  cohortPosts     CohortPost[]
+  cohortQnas      CohortQna[]
+  cohortSlides    CohortSlide[]
+  cohortVideos    CohortVideo[]
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sessions        CourseSession[]
+  enrollments     Enrollment[]
+  chatMessages    ChatMessage[]
+  execDiaries     ExecDiary[]
+
+  @@index([courseId])
+  @@map("course_schedules")
+}
+
+model CourseSession {
+  id                  Int                  @id @default(autoincrement())
+  scheduleId          Int
+  sessionDate         DateTime
+  startTime           String
+  endTime             String
+  topic               String?
+  createdAt           DateTime             @default(now())
+  sessionNumber       Int
+  meetId              String?
+  meetLink            String?
+  schedule            CourseSchedule       @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  smsNotificationLogs SmsNotificationLog[]
+
+  @@index([scheduleId])
+  @@map("course_sessions")
+}
+
+model Enrollment {
+  id         Int            @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  scheduleId Int
+  paymentId  Int?
+  status     String         @default("pending")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  course     Course         @relation(fields: [courseId], references: [id])
+  payment    Payment?       @relation(fields: [paymentId], references: [id])
+  schedule   CourseSchedule @relation(fields: [scheduleId], references: [id])
+  user       User           @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([scheduleId])
+  @@index([paymentId])
+  @@map("enrollments")
+}
+
+model Payment {
+  id                Int                  @id @default(autoincrement())
+  userId            Int
+  courseId          Int?
+  amount            Int
+  method            String               @default("kakao")
+  status            String               @default("pending")
+  payssamBillId     String?              @unique
+  payssamTxId       String?              @unique
+  billUrl           String?
+  cashReceiptIssued Boolean              @default(false)
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime             @default(now())
+  apprCardType      String?
+  apprDt            DateTime?
+  apprIssuer        String?
+  apprIssuerNum     String?
+  apprNum           String?
+  apprOriginNum     String?
+  apprPayType       String?
+  apprPrice         String?
+  apprResCd         String?
+  apprState         String?
+  billId            String?              @unique
+  daysAdded         Int?
+  description       String?              @db.Text
+  failMessage       String?              @db.Text
+  kakaoPhone        String?
+  months            Int?
+  newEndDate        DateTime?
+  previousEndDate   DateTime?
+  updatedAt         DateTime             @updatedAt
+  customerMemo      String?              @db.Text
+  enrollments              Enrollment[]
+  callbackLogs             PaymentCallbackLog[]
+  user                     User                     @relation(fields: [userId], references: [id])
+  videoPurchases           VideoPurchase[]
+  digitalProductPurchases  DigitalProductPurchase[]
+
+  @@index([userId])
+  @@index([billId])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentCallbackLog {
+  id             Int       @id @default(autoincrement())
+  paymentId      Int?
+  apikey         String?
+  billId         String?
+  apprState      String?
+  apprPayType    String?
+  apprCardType   String?
+  apprDt         DateTime?
+  apprOriginDt   DateTime?
+  apprPrice      String?
+  apprIssuer     String?
+  apprIssueCd    String?
+  apprIssuerNum  String?
+  apprAcquirerCd String?
+  apprAcquirerNm String?
+  apprNum        String?
+  apprOriginNum  String?
+  apprResCd      String?
+  apprMonthly    String?
+  message        String?   @db.Text
+  rawData        String?   @db.Text
+  createdAt      DateTime  @default(now())
+  payment        Payment?  @relation(fields: [paymentId], references: [id])
+
+  @@index([billId])
+  @@index([paymentId])
+  @@map("payment_callback_logs")
+}
+
+model Consultation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  status    String   @default("open")
+  messages  String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("consultations")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  rating     Int
+  content    String   @db.Text
+  isApproved Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  imageUrl   String?
+  cohort     Int?
+  course     Course   @relation(fields: [courseId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([courseId])
+  @@map("reviews")
+}
+
+model InstructorConsultation {
+  id           Int        @id @default(autoincrement())
+  userId       Int
+  instructorId Int
+  message      String     @db.Text
+  status       String     @default("pending")
+  response     String?    @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  courseId     Int?
+  isPublic     Boolean    @default(false)
+  respondedAt  DateTime?
+  title        String?
+  hiddenReason String?    @db.Text
+  hiddenAt     DateTime?
+  course       Course?    @relation(fields: [courseId], references: [id])
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([instructorId])
+  @@index([courseId])
+  @@map("instructor_consultations")
+}
+
+model BlogCategory {
+  id        Int        @id @default(autoincrement())
+  name      String
+  slug      String     @unique
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+  posts     BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id           Int          @id @default(autoincrement())
+  title        String
+  slug         String       @unique
+  content      String       @db.Text
+  excerpt      String?      @db.Text
+  categoryId   Int
+  authorId     Int
+  thumbnailUrl String?
+  tags         String?      @db.Text
+  views        Int          @default(0)
+  published    Boolean      @default(false)
+  publishedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  author       User         @relation(fields: [authorId], references: [id])
+  category     BlogCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([published])
+  @@map("blog_posts")
+}
+
+model EmailLog {
+  id             Int      @id @default(autoincrement())
+  recipientType  String
+  recipientEmail String?
+  recipientCount Int      @default(0)
+  subject        String
+  content        String   @db.Text
+  sentCount      Int      @default(0)
+  failedCount    Int      @default(0)
+  errors         String?  @db.Text
+  sentBy         Int
+  sentAt         DateTime @default(now())
+  admin          User     @relation(fields: [sentBy], references: [id])
+
+  @@index([sentBy])
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+model SmsLog {
+  id             Int      @id @default(autoincrement())
+  recipientType  String
+  recipientPhone String?
+  recipientCount Int      @default(0)
+  message        String   @db.Text
+  sentCount      Int      @default(0)
+  failedCount    Int      @default(0)
+  errors         String?  @db.Text
+  sentBy         Int
+  sentAt         DateTime @default(now())
+  admin          User     @relation(fields: [sentBy], references: [id])
+
+  @@index([sentBy])
+  @@index([sentAt])
+  @@map("sms_logs")
+}
+
+model SmsNotificationLog {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  sessionId Int
+  type      String
+  phone     String
+  message   String        @db.Text
+  success   Boolean       @default(false)
+  sentAt    DateTime      @default(now())
+  session   CourseSession @relation(fields: [sessionId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  @@unique([userId, sessionId, type])
+  @@index([sessionId])
+  @@index([sentAt])
+  @@map("sms_notification_logs")
+}
+
+model NotificationLog {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  type          String
+  referenceId   Int
+  referenceType String
+  phone         String
+  smsSuccess    Boolean  @default(false)
+  kakaoSuccess  Boolean  @default(false)
+  smsMessage    String   @db.Text
+  kakaoMessage  String   @db.Text
+  sentAt        DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([referenceId, referenceType])
+  @@index([sentAt])
+  @@map("notification_logs")
+}
+
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model CohortPost {
+  id         Int             @id @default(autoincrement())
+  scheduleId Int
+  userId     Int
+  title      String
+  content    String          @db.Text
+  isNotice   Boolean         @default(false)
+  viewCount  Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  comments   CohortComment[]
+  schedule   CourseSchedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("cohort_posts")
+}
+
+model CohortComment {
+  id         Int             @id @default(autoincrement())
+  postId     Int
+  scheduleId Int
+  userId     Int
+  content    String          @db.Text
+  parentId   Int?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  parent     CohortComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    CohortComment[] @relation("CommentReplies")
+  post       CohortPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  schedule   CourseSchedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("cohort_comments")
+}
+
+model CohortMaterial {
+  id          Int            @id @default(autoincrement())
+  scheduleId  Int
+  title       String
+  content     String?        @db.Text
+  order       Int            @default(0)
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  fileName    String?
+  fileSize    Int?
+  fileUrl     String?        @db.Text
+  schedule    CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([order])
+  @@map("cohort_materials")
+}
+
+model CohortVideo {
+  id          Int            @id @default(autoincrement())
+  scheduleId  Int
+  title       String
+  description String?        @db.Text
+  driveUrl    String         @db.Text
+  embedUrl    String?        @db.Text
+  order       Int            @default(0)
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  schedule    CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([order])
+  @@map("cohort_videos")
+}
+
+model CohortSlide {
+  id          Int            @id @default(autoincrement())
+  scheduleId  Int
+  title       String
+  description String?        @db.Text
+  slideUrl    String         @db.Text
+  embedUrl    String?        @db.Text
+  order       Int            @default(0)
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  schedule    CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([order])
+  @@map("cohort_slides")
+}
+
+model CohortQna {
+  id         Int            @id @default(autoincrement())
+  scheduleId Int
+  userId     Int
+  title      String
+  question   String         @db.Text
+  answer     String?        @db.Text
+  answeredBy Int?
+  answeredAt DateTime?
+  isPublic   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  admin      User?          @relation("QnaAnswers", fields: [answeredBy], references: [id])
+  schedule   CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user       User           @relation("QnaQuestions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([answeredBy])
+  @@index([createdAt])
+  @@map("cohort_qnas")
+}
+
+model InstructorApplication {
+  id                   Int       @id @default(autoincrement())
+  userId               Int       @unique
+  status               String    @default("applied")
+  privacyAgreed        Boolean   @default(false)
+  name                 String
+  field                String
+  revenue              String?
+  bio                  String    @db.Text
+  photoUrl             String?
+  instagramUrl         String?
+  youtubeUrl           String?
+  kakaoUrl             String?
+  preferredContactTime String?
+  reviewedBy           Int?
+  reviewedAt           DateTime?
+  reviewNote           String?   @db.Text
+  adminNote            String?   @db.Text
+  docName              String?
+  docAddress           String?
+  docPhone             String?
+  docBankName          String?
+  docBankAccount       String?
+  docBankHolder        String?
+  docBankCopyUrl       String?
+  docIdCopyUrl         String?
+  docYoutubeEmail      String?
+  docAdditionalInfo    String?   @db.Text
+  docAdditionalFiles   String?   @db.Text
+  documentsSubmittedAt DateTime?
+  contractSignedAt     DateTime?
+  contractFileUrl      String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  contractPeriodMonths Int?      @default(12)
+  contractType         String?   @default("independent")
+  signatureImage       String?   @db.Text
+  contractContent      String?   @db.Text
+  reviewer             User?     @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([reviewedBy])
+  @@index([createdAt])
+  @@map("instructor_applications")
+}
+
+model ChatMessage {
+  id         Int            @id @default(autoincrement())
+  scheduleId Int
+  userId     Int
+  message    String         @db.Text
+  createdAt  DateTime       @default(now())
+  schedule   CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+// 독립 영상 콘텐츠 (강의와 별개로 판매)
+model Video {
+  id           Int             @id @default(autoincrement())
+  title        String
+  description  String?         @db.Text
+  thumbnailUrl String?
+  videoUrl     String          @db.Text
+  embedUrl     String?         @db.Text
+  duration     Int?                              // 영상 길이 (초)
+  price        Int             @default(0)      // 가격 (0이면 무료)
+  isFree       Boolean         @default(false)
+  isPublished  Boolean         @default(true)
+  order        Int             @default(0)
+  viewCount    Int             @default(0)
+  categoryId   Int?
+  instructorId Int?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  category     VideoCategory?  @relation(fields: [categoryId], references: [id])
+  instructor   Instructor?     @relation(fields: [instructorId], references: [id])
+  purchases    VideoPurchase[]
+
+  @@index([categoryId])
+  @@index([instructorId])
+  @@index([isPublished])
+  @@index([order])
+  @@map("videos")
+}
+
+// 영상 카테고리
+model VideoCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  videos    Video[]
+
+  @@map("video_categories")
+}
+
+// 영상 구매 내역
+model VideoPurchase {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  videoId     Int
+  paymentId   Int?
+  status      String    @default("pending")  // pending, confirmed, cancelled, refunded
+  amount      Int                            // 결제 금액
+  purchasedAt DateTime?                      // 구매 완료 시간
+  expiresAt   DateTime?                      // 열람 만료일 (null이면 영구)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  video       Video     @relation(fields: [videoId], references: [id])
+  payment     Payment?  @relation(fields: [paymentId], references: [id])
+
+  @@unique([userId, videoId])
+  @@index([userId])
+  @@index([videoId])
+  @@index([paymentId])
+  @@index([status])
+  @@map("video_purchases")
+}
+
+// 디지털 상품 (전자책, 프로그램 등)
+model DigitalProduct {
+  id           Int                      @id @default(autoincrement())
+  title        String
+  description  String?                  @db.Text
+  type         String                   @default("ebook")  // ebook, program, slides (강의자료)
+  thumbnailUrl String?
+  fileUrl      String?                  @db.Text           // 다운로드 파일 URL (slides는 null 가능)
+  externalUrl  String?                  @db.Text           // 외부 링크 (Google Slides 등)
+  fileName     String?                                     // 원본 파일명
+  fileSize     Int?                                        // 파일 크기 (bytes)
+  price        Int                      @default(0)
+  isFree       Boolean                  @default(false)
+  isPublished  Boolean                  @default(true)
+  order        Int                      @default(0)
+  downloadCount Int                     @default(0)
+  categoryId   Int?
+  instructorId Int?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  category     DigitalProductCategory?  @relation(fields: [categoryId], references: [id])
+  instructor   Instructor?              @relation(fields: [instructorId], references: [id])
+  purchases    DigitalProductPurchase[]
+
+  @@index([categoryId])
+  @@index([instructorId])
+  @@index([type])
+  @@index([isPublished])
+  @@index([order])
+  @@map("digital_products")
+}
+
+// 디지털 상품 카테고리
+model DigitalProductCategory {
+  id        Int              @id @default(autoincrement())
+  name      String
+  slug      String           @unique
+  type      String           @default("ebook")  // ebook, program, slides
+  order     Int              @default(0)
+  createdAt DateTime         @default(now())
+  products  DigitalProduct[]
+
+  @@index([type])
+  @@map("digital_product_categories")
+}
+
+// 디지털 상품 구매 내역
+model DigitalProductPurchase {
+  id           Int             @id @default(autoincrement())
+  userId       Int
+  productId    Int
+  paymentId    Int?
+  status       String          @default("pending")
+  amount       Int
+  purchasedAt  DateTime?
+  downloadedAt DateTime?                          // 최초 다운로드 시간
+  downloadCount Int            @default(0)        // 다운로드 횟수
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  user         User            @relation(fields: [userId], references: [id])
+  product      DigitalProduct  @relation(fields: [productId], references: [id])
+  payment      Payment?        @relation(fields: [paymentId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@index([paymentId])
+  @@index([status])
+  @@map("digital_product_purchases")
+}
+
+// EXEC 시스템 과제 (강사가 생성, 강의와 1:1 연결)
+model CurriculumTask {
+  id          Int                   @id @default(autoincrement())
+  courseId    Int                   // 강의와 1:1 연결
+  category    String                // 'pre' (사전 준비), 'during' (강의 숙제), 'post' (사후 관리)
+  title       String                // 과제 제목
+  description String?               @db.Text  // 과제 설명
+  solution    String?               @db.Text  // HTML 형식 해결방법 (링크, 이미지, 영상 포함 가능)
+  order       Int                   @default(0)
+  isRequired  Boolean               @default(true)  // 필수 과제 여부
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  course      Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    StudentTaskProgress[]
+
+  @@index([courseId])
+  @@index([category])
+  @@index([order])
+  @@map("curriculum_tasks")
+}
+
+// 수강생 과제 진행 상태
+model StudentTaskProgress {
+  id              Int            @id @default(autoincrement())
+  taskId          Int
+  userId          Int
+  isCompleted     Boolean        @default(false)   // 완료 여부 (예/아니오)
+  completedAt     DateTime?                        // 완료 시간
+  helpRequested   Boolean        @default(false)   // 도움 요청 여부
+  helpMessage     String?        @db.Text          // 도움 요청 메시지
+  helpRequestedAt DateTime?                        // 도움 요청 시간
+  helpResponse    String?        @db.Text          // 강사 답변 (HTML 형식)
+  helpRespondedAt DateTime?                        // 강사 답변 시간
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  task            CurriculumTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])  // 같은 과제에 대해 수강생당 하나의 진행상태
+  @@index([taskId])
+  @@index([userId])
+  @@index([isCompleted])
+  @@index([helpRequested])
+  @@map("student_task_progress")
+}
+
+// EXEC 사업일기 (수강생이 매일 작성, 공개)
+model ExecDiary {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  courseId    Int
+  scheduleId  Int                   // 기수
+  date        DateTime @db.Date     // 작성일
+  todayGoal   String?  @db.Text     // 오늘의 목표
+  todayWork   String?  @db.Text     // 오늘 한 일
+  todayLearn  String?  @db.Text     // 오늘 배운 것
+  tomorrow    String?  @db.Text     // 내일 할 일
+  feeling     String?               // 오늘의 기분 (좋음/보통/힘듬)
+  isPublic    Boolean  @default(true)  // 공개 여부 (기본 공개)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  schedule    CourseSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId, date])  // 하루에 한 일기
+  @@index([userId])
+  @@index([courseId])
+  @@index([scheduleId])
+  @@index([date])
+  @@index([isPublic])
+  @@map("exec_diaries")
+}
