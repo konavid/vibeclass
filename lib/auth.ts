@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.KAKAO_CLIENT_SECRET || '',
       authorization: {
         params: {
-          scope: 'profile_nickname profile_image account_email',
+          scope: 'profile_nickname profile_image',
         },
       },
     }),
