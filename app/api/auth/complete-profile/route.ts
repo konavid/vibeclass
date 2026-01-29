@@ -19,10 +19,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, email, nickname, phone, termsAgreed, privacyAgreed, marketingConsent } = body
 
-    // 필수 항목 확인
-    if (!name || !email || !nickname || !phone) {
+    // 필수 항목 확인 (연락처 제외)
+    if (!name || !email || !nickname) {
       return NextResponse.json(
-        { error: '이름, 이메일, 별명, 연락처는 필수 항목입니다' },
+        { error: '이름, 이메일, 별명은 필수 항목입니다' },
         { status: 400 }
       )
     }

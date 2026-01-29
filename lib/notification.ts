@@ -90,27 +90,33 @@ AI 시대, 누구나 쉽게 배우는
   // 간단한 SMS 메시지
   const shortSmsMessage = `[바이브클래스] ${userName}님, 회원가입 완료`
 
-  // 카카오 알림톡 발송 (실패 시 SMS 대체)
-  const kakaoResult = await sendKakaoWithLogging({
-    receiver: phone,
-    tplCode: tplCode || '',
-    subject: '회원가입 완료',
-    message: kakaoMessage,
-    button: {
-      name: '강의 둘러보기',
-      linkType: 'WL',
-      linkM: 'https://vibeclass.kr/courses',
-      linkP: 'https://vibeclass.kr/courses'
-    },
-    failover: true,
-    failoverSubject: '[바이브클래스]',
-    failoverMessage: shortSmsMessage
-  })
+  // 카카오 알림톡/SMS 발송 (전화번호가 있을 경우에만)
+  let smsResult: { success: boolean; error?: string } = { success: false, error: '전화번호 없음' }
+  let kakaoResult: { success: boolean; mid?: string; error?: string } = { success: false, error: '전화번호 없음' }
 
-  // 카카오 알림톡 실패 시에만 SMS 발송
-  const smsResult = kakaoResult.success
-    ? { success: true, error: '카카오톡 발송 성공으로 SMS 스킵' }
-    : await sendSMSWithLogging(phone, shortSmsMessage)
+  if (phone) {
+    // 카카오 알림톡 발송 (실패 시 SMS 대체)
+    kakaoResult = await sendKakaoWithLogging({
+      receiver: phone,
+      tplCode: tplCode || '',
+      subject: '회원가입 완료',
+      message: kakaoMessage,
+      button: {
+        name: '강의 둘러보기',
+        linkType: 'WL',
+        linkM: 'https://vibeclass.kr/courses',
+        linkP: 'https://vibeclass.kr/courses'
+      },
+      failover: true,
+      failoverSubject: '[바이브클래스]',
+      failoverMessage: shortSmsMessage
+    })
+
+    // 카카오 알림톡 실패 시에만 SMS 발송
+    smsResult = kakaoResult.success
+      ? { success: true, error: '카카오톡 발송 성공으로 SMS 스킵' }
+      : await sendSMSWithLogging(phone, shortSmsMessage)
+  }
 
   // 이메일 발송
   const emailResult = await sendEmailWithLogging(email, '[바이브클래스] 회원가입을 환영합니다!', emailHtml)

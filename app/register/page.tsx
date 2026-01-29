@@ -197,8 +197,9 @@ function RegisterContent() {
 
   const validatePhone = (value: string) => {
     if (!value.trim()) {
-      setFieldErrors(prev => ({ ...prev, phone: '연락처를 입력해주세요' }))
-      return false
+      // 선택항목으로 변경
+      setFieldErrors(prev => ({ ...prev, phone: '' }))
+      return true
     }
     const cleanPhone = value.replace(/[^0-9]/g, '')
     if (cleanPhone.length !== 11 || !cleanPhone.startsWith('010')) {
@@ -226,9 +227,9 @@ function RegisterContent() {
       setFieldErrors(prev => ({ ...prev, terms: '' }))
     }
 
-    if (!isVerified) {
-      setFieldErrors(prev => ({ ...prev, verification: '전화번호 인증을 완료해주세요' }))
-      setError('전화번호 인증을 완료해주세요')
+    if (phone.trim() && !isVerified) {
+      setFieldErrors(prev => ({ ...prev, verification: '전화번호를 입력한 경우 인증을 완료해주세요' }))
+      setError('전화번호를 입력한 경우 인증을 완료해주세요')
       return
     } else {
       setFieldErrors(prev => ({ ...prev, verification: '' }))
@@ -389,7 +390,7 @@ function RegisterContent() {
 
                 <div className="mb-6">
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    연락처 <span className="text-red-500">*</span>
+                    연락처 <span className="text-gray-400 text-xs font-normal ml-1">(선택)</span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -408,11 +409,10 @@ function RegisterContent() {
                       onBlur={() => validatePhone(phone)}
                       placeholder="01012345678"
                       disabled={isVerified}
-                      className={`flex-1 px-4 py-2 border rounded-lg text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors outline-none ${
-                        fieldErrors.phone
+                      className={`flex-1 px-4 py-2 border rounded-lg text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors outline-none ${fieldErrors.phone
                           ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500'
                           : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                      }`}
+                        }`}
                       required
                     />
                     <Button
@@ -482,11 +482,10 @@ function RegisterContent() {
                         }}
                         placeholder="6자리 숫자"
                         maxLength={6}
-                        className={`flex-1 px-4 py-2 border rounded-lg text-gray-900 bg-white transition-colors outline-none ${
-                          fieldErrors.verification
+                        className={`flex-1 px-4 py-2 border rounded-lg text-gray-900 bg-white transition-colors outline-none ${fieldErrors.verification
                             ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500'
                             : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                        }`}
+                          }`}
                         required
                       />
                       <Button
@@ -602,14 +601,14 @@ function RegisterContent() {
                     <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
-                    <span>회원가입을 완료하려면 연락처 SMS 인증이 필수입니다!</span>
+                    <span>전화번호를 입력하신 경우 SMS 인증이 필수입니다!</span>
                   </p>
                 </div>
               )}
 
               <Button
                 type="submit"
-                disabled={loading || !termsAgreed || !privacyAgreed || !isVerified}
+                disabled={loading || !termsAgreed || !privacyAgreed || (phone.trim().length > 0 && !isVerified)}
                 variant="primary"
                 fullWidth
                 size="lg"
@@ -619,7 +618,7 @@ function RegisterContent() {
 
               {!isVerified && (
                 <p className="text-center text-sm text-gray-600 mt-3">
-                  ※ 연락처 인증을 완료해야 회원가입이 가능합니다
+                  ※ 연락처 입력은 선택사항입니다
                 </p>
               )}
             </form>
