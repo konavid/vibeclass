@@ -7,9 +7,8 @@ import { siteConfig, textConfig, getMetadata } from '@/lib/config'
 
 export const metadata = getMetadata()
 
-// 페이지 캐싱 비활성화 - 항상 최신 데이터 표시
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// 페이지 캐싱 활성화 - 1시간마다 갱신 (ISR)
+export const revalidate = 3600
 
 // 강의별 고유 색상 팔레트
 const courseColors = [
@@ -284,14 +283,25 @@ async function getRecruitingCourses() {
 }
 
 export default async function Home() {
-  const courses = await getFeaturedCourses()
-  const instructors = await getInstructorsWithCourses()
-  const allSchedules = await getAllSchedules()
-  const freeCourses = await getFreeCourses()
-  const freeVideos = await getFreeVideos()
-  const freeProducts = await getFreeProducts()
-  const freeSlides = await getFreeSlides()
-  const recruitingCourses = await getRecruitingCourses()
+  const [
+    courses,
+    instructors,
+    allSchedules,
+    freeCourses,
+    freeVideos,
+    freeProducts,
+    freeSlides,
+    recruitingCourses
+  ] = await Promise.all([
+    getFeaturedCourses(),
+    getInstructorsWithCourses(),
+    getAllSchedules(),
+    getFreeCourses(),
+    getFreeVideos(),
+    getFreeProducts(),
+    getFreeSlides(),
+    getRecruitingCourses()
+  ])
 
   // 무료 에셋 총 개수
   const totalFreeAssets = freeCourses.length + freeVideos.length + freeProducts.length + freeSlides.length
