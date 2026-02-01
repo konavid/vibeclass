@@ -478,7 +478,7 @@ model SmsNotificationLog {
   success   Boolean       @default(false)
   sentAt    DateTime      @default(now())
   session   CourseSession @relation(fields: [sessionId], references: [id])
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, sessionId, type])
   @@index([sessionId])
@@ -498,7 +498,7 @@ model NotificationLog {
   smsMessage    String   @db.Text
   kakaoMessage  String   @db.Text
   sentAt        DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])

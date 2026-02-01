@@ -30,93 +30,101 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 강사의 강의 목록 (admin은 모든 강의, 강사는 자기 강의만)
-    const courses = await prisma.course.findMany({
-      where: instructor ? { instructorId: instructor.id } : {},
-      include: {
-        schedules: {
-          include: {
-            enrollments: {
-              where: { status: { in: ['confirmed', 'completed'] } }
-            },
-            sessions: true
+    // 4. 통계 및 데이터 조회 (병렬 처리)
+    const [
+      totalCourses,
+      totalStudentsData,
+      reviewStats,
+      ongoingCourses,
+      recentEnrollments,
+      upcomingSessions
+    ] = await Promise.all([
+      // 총 강의 수
+      prisma.course.count({
+        where: instructor ? { instructorId: instructor.id } : {}
+      }),
+
+      // 총 수강생 수 (Enrollment 기준)
+      prisma.enrollment.count({
+        where: {
+          status: { in: ['confirmed', 'completed'] },
+          schedule: {
+            course: instructor ? { instructorId: instructor.id } : {}
           }
-        },
-        reviews: {
-          where: { isApproved: true }
         }
-      }
-    })
+      }),
 
-    // 통계 계산
-    const totalCourses = courses.length
-    const totalStudents = courses.reduce((acc, course) => {
-      return acc + course.schedules.reduce((sAcc, schedule) => sAcc + schedule.enrollments.length, 0)
-    }, 0)
-    const allReviews = courses.flatMap(c => c.reviews)
-    const totalReviews = allReviews.length
-    const averageRating = totalReviews > 0
-      ? allReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
-      : 0
-
-    // 진행 중인 강의 수
-    const now = new Date()
-    const ongoingCourses = courses.filter(course =>
-      course.schedules.some(schedule =>
-        new Date(schedule.startDate) <= now && new Date(schedule.endDate) >= now
-      )
-    ).length
-
-    // 최근 수강 신청 (최근 10개)
-    const recentEnrollments = await prisma.enrollment.findMany({
-      where: {
-        schedule: {
+      // 리뷰 통계 (총 개수 및 평균 평점)
+      prisma.review.aggregate({
+        where: {
+          isApproved: true,
           course: instructor ? { instructorId: instructor.id } : {}
         },
-        status: { in: ['confirmed', 'completed'] }
-      },
-      include: {
-        user: {
-          select: { name: true, nickname: true }
-        },
-        schedule: {
-          include: {
-            course: {
-              select: { title: true }
+        _count: true,
+        _avg: { rating: true }
+      }),
+
+      // 진행 중인 강의 수
+      prisma.course.count({
+        where: {
+          ...(instructor ? { instructorId: instructor.id } : {}),
+          status: 'active',
+          schedules: {
+            some: {
+              startDate: { lte: new Date() },
+              endDate: { gte: new Date() }
             }
           }
         }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    })
+      }),
 
-    // 예정된 수업 세션 (7일 이내)
-    const sevenDaysLater = new Date()
-    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7)
-
-    const upcomingSessions = await prisma.courseSession.findMany({
-      where: {
-        schedule: {
-          course: instructor ? { instructorId: instructor.id } : {}
+      // 최근 수강 신청 (최근 10개)
+      prisma.enrollment.findMany({
+        where: {
+          status: { in: ['confirmed', 'completed'] },
+          schedule: {
+            course: instructor ? { instructorId: instructor.id } : {}
+          }
         },
-        sessionDate: {
-          gte: now,
-          lte: sevenDaysLater
-        }
-      },
-      include: {
-        schedule: {
-          include: {
-            course: {
-              select: { title: true }
+        include: {
+          user: { select: { name: true, nickname: true } },
+          schedule: {
+            include: {
+              course: { select: { title: true } }
             }
           }
-        }
-      },
-      orderBy: { sessionDate: 'asc' },
-      take: 5
-    })
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      }),
+
+      // 예정된 수업 세션 (7일 이내)
+      prisma.courseSession.findMany({
+        where: {
+          schedule: {
+            course: instructor ? { instructorId: instructor.id } : {}
+          },
+          sessionDate: {
+            gte: new Date(),
+            lte: new Date(new Date().setDate(new Date().getDate() + 7))
+          }
+        },
+        include: {
+          schedule: {
+            include: {
+              course: { select: { title: true } }
+            }
+          }
+        },
+        orderBy: { sessionDate: 'asc' },
+        take: 5
+      })
+    ])
+
+    // 통계 데이터 정리
+    const totalStudents = totalStudentsData
+    const totalReviews = reviewStats._count
+    const averageRating = reviewStats._avg.rating || 0
 
     return NextResponse.json({
       success: true,

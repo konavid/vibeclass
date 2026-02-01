@@ -23,17 +23,17 @@ export async function GET(request: NextRequest) {
     }
 
     // 전체 통계
-    const [totalUsers, totalCourses, totalEnrollments, payments] = await Promise.all([
+    const [totalUsers, totalCourses, totalEnrollments, revenueAggregation] = await Promise.all([
       prisma.user.count(),
       prisma.course.count(),
       prisma.enrollment.count({ where: { status: 'confirmed' } }),
-      prisma.payment.findMany({
+      prisma.payment.aggregate({
         where: { status: 'confirmed' },
-        select: { amount: true }
+        _sum: { amount: true }
       })
     ])
 
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0)
+    const totalRevenue = revenueAggregation._sum.amount || 0
 
     // 최근 결제 (최근 10개)
     const recentPayments = await prisma.payment.findMany({
