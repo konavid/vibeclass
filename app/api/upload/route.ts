@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
-import { join } from 'path'
-import { existsSync, mkdirSync } from 'fs'
+import { supabase } from '@/lib/supabase'
 import {
   requireAuth,
   badRequestResponse,
@@ -83,29 +81,33 @@ export async function POST(request: NextRequest) {
       return badRequestResponse('파일 내용이 확장자와 일치하지 않습니다.')
     }
 
-    // 안전한 파일명 생성
+    // 안전한 파일명 생성 (경로 포함하지 않음)
     const timestamp = Date.now()
     const randomSuffix = Math.random().toString(36).substring(2, 8)
     const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ''))
-    const fileName = `${timestamp}_${randomSuffix}_${safeName}.${originalExt}`
+    const fileName = `${uploadType}/${timestamp}_${randomSuffix}_${safeName}.${originalExt}`
 
-    // 저장 경로 (public/uploads/{type}/)
-    const uploadDir = join(process.cwd(), 'public', 'uploads', uploadType)
+    // Supabase Storage에 업로드
+    const { data, error: uploadError } = await supabase.storage
+      .from('uploads')
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: false
+      })
 
-    // 디렉토리가 없으면 생성
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true })
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return serverErrorResponse('스토리지 저장에 실패했습니다.')
     }
 
-    const filePath = join(uploadDir, fileName)
-    await writeFile(filePath, buffer)
-
-    // URL 반환
-    const fileUrl = `/uploads/${uploadType}/${fileName}`
+    // 공개 URL 가져오기
+    const { data: publicUrlData } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(fileName)
 
     return NextResponse.json({
       success: true,
-      url: fileUrl
+      url: publicUrlData.publicUrl
     })
   } catch (error) {
     safeErrorLog('파일 업로드 오류:', error)

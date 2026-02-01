@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateImage, base64ToBuffer } from '@/lib/gemini'
-import fs from 'fs/promises'
+import { supabase } from '@/lib/supabase'
 import path from 'path'
+import fs from 'fs/promises'
 import sharp from 'sharp'
 
 // 강의 주제에 맞는 이미지 스타일 정의
@@ -212,16 +213,29 @@ No people, no faces. 16:9 aspect ratio.`
       .jpeg({ quality: 90 })
       .toBuffer()
 
-    // 파일 저장
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'image', 'courses')
-    await fs.mkdir(uploadDir, { recursive: true })
+    // Supabase Storage에 업로드
+    const fileName = `image/courses/thumb-${Date.now()}.jpg`
 
-    const fileName = `thumb-${Date.now()}.jpg`
-    const filePath = path.join(uploadDir, fileName)
-    await fs.writeFile(filePath, resizedBuffer)
+    // Supabase에 저장
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('uploads')
+      .upload(fileName, resizedBuffer, {
+        contentType: 'image/jpeg',
+        upsert: false
+      })
 
-    const imageUrl = `/uploads/image/courses/${fileName}`
-    console.log('Image saved:', imageUrl)
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      throw new Error('Failed to upload image to storage')
+    }
+
+    // 공개 URL 가져오기
+    const { data: publicUrlData } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(fileName)
+
+    const imageUrl = publicUrlData.publicUrl
+    console.log('Image uploaded to Supabase:', imageUrl)
 
     return NextResponse.json({
       success: true,
