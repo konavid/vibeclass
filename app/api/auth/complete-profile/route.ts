@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, email, nickname, phone, termsAgreed, privacyAgreed, marketingConsent } = body
+    const { name, email, nickname, termsAgreed, privacyAgreed, marketingConsent } = body
 
     // 필수 항목 확인 (연락처 제외)
     if (!name || !email || !nickname) {
@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
         name,
         email,
         nickname,
-        phone,
         profileCompleted: true,
         termsAgreed,
         privacyAgreed,
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
       try {
         const notificationResult = await sendRegistrationCompleteNotification({
           userId: updatedUser.id,
-          phone: phone || '',
+          phone: '', // 전화번호 없음
           email: email || '',
           userName: nickname || name
         })
@@ -97,7 +96,6 @@ export async function POST(request: NextRequest) {
         email: updatedUser.email,
         name: updatedUser.name,
         nickname: updatedUser.nickname,
-        phone: updatedUser.phone,
         profileCompleted: updatedUser.profileCompleted,
       },
     })

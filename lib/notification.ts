@@ -54,7 +54,7 @@ interface ReviewRequestParams {
 
 interface RegistrationCompleteParams {
   userId: number
-  phone: string
+  phone?: string
   email: string
   userName: string
 }
@@ -127,7 +127,7 @@ AI 시대, 누구나 쉽게 배우는
     type: 'registration_complete',
     referenceId: userId,
     referenceType: 'user',
-    phone,
+    phone: phone || '',
     email,
     smsSuccess: smsResult.success,
     emailSuccess: emailResult.success,
