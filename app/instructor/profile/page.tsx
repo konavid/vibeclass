@@ -141,9 +141,9 @@ export default function InstructorProfilePage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 파일 크기 체크 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: '파일 크기는 5MB 이하여야 합니다.' })
+    // 파일 크기 체크 (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      setMessage({ type: 'error', text: '파일 크기는 4MB 이하여야 합니다.' })
       return
     }
 
@@ -187,8 +187,8 @@ export default function InstructorProfilePage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 10 * 1024 * 1024) {
-      setMessage({ type: 'error', text: '파일 크기는 10MB 이하여야 합니다.' })
+    if (file.size > 4 * 1024 * 1024) {
+      setMessage({ type: 'error', text: '파일 크기는 4MB 이하여야 합니다.' })
       return
     }
 

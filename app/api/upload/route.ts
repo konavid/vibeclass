@@ -13,12 +13,12 @@ import {
 // 파일 타입별 설정
 const FILE_CONFIG = {
   courses: {
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 4 * 1024 * 1024, // 4MB (Vercel Limit safe)
     allowedTypes: ALLOWED_IMAGE_TYPES,
     allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
   },
   instructors: {
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 4 * 1024 * 1024, // 4MB
     allowedTypes: ALLOWED_IMAGE_TYPES,
     allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
   },

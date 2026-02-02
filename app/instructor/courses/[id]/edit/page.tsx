@@ -446,8 +446,8 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: '파일 크기는 5MB 이하여야 합니다.' })
+    if (file.size > 4 * 1024 * 1024) {
+      setMessage({ type: 'error', text: '파일 크기는 4MB 이하여야 합니다.' })
       return
     }
 
@@ -690,9 +690,9 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
       return
     }
 
-    // 파일 크기 검증 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: '파일 크기는 5MB를 초과할 수 없습니다' })
+    // 파일 크기 검증 (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      setMessage({ type: 'error', text: '파일 크기는 4MB를 초과할 수 없습니다' })
       return
     }
 
@@ -780,8 +780,8 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
               }`}
           >
             {message.text}

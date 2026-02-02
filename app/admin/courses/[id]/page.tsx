@@ -288,6 +288,12 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
     const file = e.target.files?.[0]
     if (!file) return
 
+    // 파일 크기 검증 (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      alert('파일 크기는 4MB를 초과할 수 없습니다')
+      return
+    }
+
     // 미리보기 생성
     const reader = new FileReader()
     reader.onloadend = () => {
@@ -474,9 +480,9 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
       return
     }
 
-    // 파일 크기 검증 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB를 초과할 수 없습니다')
+    // 파일 크기 검증 (4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      alert('파일 크기는 4MB를 초과할 수 없습니다')
       return
     }
 
@@ -872,8 +878,8 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
             <button
               onClick={handleToggleStatus}
               className={`px-4 py-2 rounded-md text-white font-medium ${course.status === 'active'
-                  ? 'bg-yellow-600 hover:bg-yellow-700'
-                  : 'bg-green-600 hover:bg-green-700'
+                ? 'bg-yellow-600 hover:bg-yellow-700'
+                : 'bg-green-600 hover:bg-green-700'
                 }`}
             >
               {course.status === 'active' ? '비활성화' : '활성화'}
@@ -1563,8 +1569,8 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
                 <h3 className="text-sm font-medium text-gray-500">상태</h3>
                 <p className="mt-1">
                   <span className={`px-2 py-1 text-xs rounded ${course.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
                     }`}>
                     {course.status === 'active' ? '활성' : '비활성'}
                   </span>
@@ -1797,9 +1803,9 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`px-3 py-1 text-sm font-medium rounded ${schedule.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                            schedule.status === 'ongoing' ? 'bg-green-100 text-green-800' :
-                              schedule.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                                'bg-red-100 text-red-800'
+                          schedule.status === 'ongoing' ? 'bg-green-100 text-green-800' :
+                            schedule.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                              'bg-red-100 text-red-800'
                           }`}>
                           {schedule.status === 'scheduled' ? '예정' :
                             schedule.status === 'ongoing' ? '진행중' :
@@ -2057,8 +2063,8 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
                                   </div>
                                   <div className="text-right">
                                     <span className={`px-2 py-1 text-xs rounded ${enrollment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                        enrollment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                                          'bg-gray-100 text-gray-800'
+                                      enrollment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-gray-100 text-gray-800'
                                       }`}>
                                       {enrollment.status === 'confirmed' ? '수강중' :
                                         enrollment.status === 'completed' ? '수료' : '대기'}
@@ -2129,8 +2135,8 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
                           key={i}
                           onClick={() => setCurrentPage(i)}
                           className={`px-3 py-2 text-sm font-medium rounded-md ${currentPage === i
-                              ? 'bg-indigo-600 text-white'
-                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                             }`}
                         >
                           {i}
