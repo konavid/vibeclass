@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import fs from 'fs/promises'
-import path from 'path'
 import { generateText, generateImage, base64ToBuffer } from '@/lib/gemini'
+import { uploadToR2 } from '@/lib/r2'
 
 // HTML에서 텍스트만 추출
 function extractTextFromHtml(html: string): string {
@@ -159,14 +159,14 @@ export async function POST(request: NextRequest) {
       const imageBase64 = await generateImage({ prompt, aspectRatio: '9:16' })
       const buffer = base64ToBuffer(imageBase64)
 
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'image', 'courses', 'promo')
-      await fs.mkdir(uploadDir, { recursive: true })
+      const fileName = `image/courses/promo/promo-${courseId}-${type}-${singleIndex}-${Date.now()}.jpg`
+      const { success, url } = await uploadToR2(buffer, fileName, 'image/jpeg')
 
-      const fileName = `promo-${courseId}-${type}-${singleIndex}-${Date.now()}.jpg`
-      const filePath = path.join(uploadDir, fileName)
-      await fs.writeFile(filePath, buffer)
+      if (!success || !url) {
+        throw new Error('Failed to upload image to R2')
+      }
 
-      const newImageUrl = `/uploads/image/courses/promo/${fileName}`
+      const newImageUrl = url
       const updatedImages = [...currentImages, newImageUrl]
 
       await prisma.course.update({
@@ -193,14 +193,12 @@ export async function POST(request: NextRequest) {
         const imageBase64 = await generateImage({ prompt: imagePrompts[i], aspectRatio: '9:16' })
         const buffer = base64ToBuffer(imageBase64)
 
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'image', 'courses', 'promo')
-        await fs.mkdir(uploadDir, { recursive: true })
+        const fileName = `image/courses/promo/promo-${courseId}-${type}-${i}-${Date.now()}.jpg`
+        const { success, url } = await uploadToR2(buffer, fileName, 'image/jpeg')
 
-        const fileName = `promo-${courseId}-${type}-${i}-${Date.now()}.jpg`
-        const filePath = path.join(uploadDir, fileName)
-        await fs.writeFile(filePath, buffer)
-
-        generatedImages.push(`/uploads/image/courses/promo/${fileName}`)
+        if (success && url) {
+          generatedImages.push(url)
+        }
       } catch (error) {
         console.error(`Error generating image ${i + 1}:`, error)
       }

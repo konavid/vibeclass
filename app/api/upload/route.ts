@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { uploadToR2 } from '@/lib/r2'
 import {
   requireAuth,
   badRequestResponse,
@@ -40,6 +40,11 @@ export async function POST(request: NextRequest) {
     const { session, error } = await requireAuth()
     if (error) return error
 
+    // 환경변수 확인 로그
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in API route!')
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const typeParam = formData.get('type') as string | null
@@ -68,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // 확장자 검증
     const originalExt = file.name.split('.').pop()?.toLowerCase() || ''
-    if (!config.allowedExtensions.includes(originalExt)) {
+    if (!config.allowedExtensions.includes(originalExt as any)) {
       return badRequestResponse('허용되지 않는 파일 확장자입니다.')
     }
 
@@ -87,27 +92,22 @@ export async function POST(request: NextRequest) {
     const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ''))
     const fileName = `${uploadType}/${timestamp}_${randomSuffix}_${safeName}.${originalExt}`
 
-    // Supabase Storage에 업로드
-    const { data, error: uploadError } = await supabase.storage
-      .from('uploads')
-      .upload(fileName, buffer, {
-        contentType: file.type,
-        upsert: false
-      })
+    // R2 Storage에 업로드
+    const { success, url, error: uploadError } = await uploadToR2(buffer, fileName, file.type)
 
-    if (uploadError) {
-      console.error('Supabase upload error:', uploadError)
+    if (!success || uploadError) {
+      console.error('R2 upload error:', uploadError)
+      safeErrorLog('R2 Storage 업로드 상세 오류:', uploadError)
       return serverErrorResponse('스토리지 저장에 실패했습니다.')
     }
 
-    // 공개 URL 가져오기
-    const { data: publicUrlData } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(fileName)
+    if (!url) {
+      return serverErrorResponse('스토리지 URL 구성 오류: 환경 변수를 확인해주세요.')
+    }
 
     return NextResponse.json({
       success: true,
-      url: publicUrlData.publicUrl
+      url: url
     })
   } catch (error) {
     safeErrorLog('파일 업로드 오류:', error)

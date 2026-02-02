@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateImage, base64ToBuffer } from '@/lib/gemini'
+import { uploadToR2 } from '@/lib/r2'
 import fs from 'fs/promises'
 import path from 'path'
 import sharp from 'sharp'
@@ -246,16 +247,17 @@ No people, no faces. 16:9 aspect ratio.`
       .jpeg({ quality: 90 })
       .toBuffer()
 
-    // 파일 저장
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'image', 'courses')
-    await fs.mkdir(uploadDir, { recursive: true })
+    // R2 Storage에 업로드
+    const fileName = `image/courses/thumb-${Date.now()}.jpg`
+    const { success, url, error: uploadError } = await uploadToR2(resizedBuffer, fileName, 'image/jpeg')
 
-    const fileName = `thumb-${Date.now()}.jpg`
-    const filePath = path.join(uploadDir, fileName)
-    await fs.writeFile(filePath, resizedBuffer)
+    if (!success || uploadError) {
+      console.error('R2 upload error:', uploadError)
+      throw new Error('Failed to upload image to storage')
+    }
 
-    const imageUrl = `/uploads/image/courses/${fileName}`
-    console.log('Image saved:', imageUrl)
+    const imageUrl = url
+    console.log('Image uploaded to R2:', imageUrl)
 
     return NextResponse.json({
       success: true,

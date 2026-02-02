@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateImage, base64ToBuffer } from '@/lib/gemini'
-import { supabase } from '@/lib/supabase'
+import { uploadToR2 } from '@/lib/r2'
 import path from 'path'
 import fs from 'fs/promises'
 import sharp from 'sharp'
@@ -213,29 +213,19 @@ No people, no faces. 16:9 aspect ratio.`
       .jpeg({ quality: 90 })
       .toBuffer()
 
-    // Supabase Storage에 업로드
+    // R2 Storage에 업로드
     const fileName = `image/courses/thumb-${Date.now()}.jpg`
 
-    // Supabase에 저장
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('uploads')
-      .upload(fileName, resizedBuffer, {
-        contentType: 'image/jpeg',
-        upsert: false
-      })
+    // R2에 저장
+    const { success, url, error: uploadError } = await uploadToR2(resizedBuffer, fileName, 'image/jpeg')
 
-    if (uploadError) {
-      console.error('Supabase upload error:', uploadError)
+    if (!success || uploadError) {
+      console.error('R2 upload error:', uploadError)
       throw new Error('Failed to upload image to storage')
     }
 
-    // 공개 URL 가져오기
-    const { data: publicUrlData } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(fileName)
-
-    const imageUrl = publicUrlData.publicUrl
-    console.log('Image uploaded to Supabase:', imageUrl)
+    const imageUrl = url
+    console.log('Image uploaded to R2:', imageUrl)
 
     return NextResponse.json({
       success: true,
