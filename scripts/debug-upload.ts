@@ -1,55 +1,36 @@
-
-import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import path from 'path'
 
-// Load environment variables from .env file
+// Load environment variables from .env file FIRST
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+async function testR2Upload() {
+    // Dynamic import to ensure env vars are loaded
+    const { uploadToR2 } = await import('../lib/r2')
 
-if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('Missing Supabase URL or Service Key')
-    process.exit(1)
-}
+    console.log('Testing upload to Cloudflare R2...')
+    console.log('Account ID:', process.env.R2_ACCOUNT_ID)
+    console.log('Bucket:', process.env.R2_BUCKET_NAME)
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-        autoRefreshToken: false,
-        persistSession: false
+    if (!process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
+        console.error('Missing R2 Credentials')
+        return
     }
-})
 
-async function testUpload() {
-    console.log('Testing upload to Supabase Storage...')
-    console.log('URL:', supabaseUrl)
-    console.log('Key length:', supabaseServiceKey.length)
+    const buffer = Buffer.from('Thinking... Hello R2 from VibeClass!')
+    const fileName = `debug/test-${Date.now()}.txt`
 
-    const buffer = Buffer.from('Hello, World!')
-    const fileName = `test/${Date.now()}_test.txt`
+    console.log('Uploading file:', fileName)
 
-    const { data, error } = await supabaseAdmin.storage
-        .from('uploads')
-        .upload(fileName, buffer, {
-            contentType: 'text/plain',
-            upsert: false
-        })
+    const result = await uploadToR2(buffer, fileName, 'text/plain')
 
-    if (error) {
-        console.error('Upload failed with error:', error)
+    if (result.success) {
+        console.log('Upload successful!')
+        console.log('Public URL:', result.url)
     } else {
-        console.log('Upload successful:', data)
-
-        // Clean up
-        /*
-        const { error: deleteError } = await supabaseAdmin.storage
-            .from('uploads')
-            .remove([fileName])
-        if (deleteError) console.error(' cleanup failed:', deleteError)
-        else console.log('Cleanup successful')
-        */
+        console.error('Upload failed:')
+        console.error(result.error)
     }
 }
 
-testUpload()
+testR2Upload()

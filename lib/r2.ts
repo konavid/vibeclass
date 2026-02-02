@@ -7,13 +7,18 @@ const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'vibeclass'
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL
 
 // 클라이언트 초기화
+const endpoint = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+console.log('R2 Endpoint:', endpoint)
+console.log('R2 Account ID:', R2_ACCOUNT_ID)
+
 export const r2Client = new S3Client({
     region: 'auto',
-    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint,
     credentials: {
         accessKeyId: R2_ACCESS_KEY_ID || '',
         secretAccessKey: R2_SECRET_ACCESS_KEY || '',
     },
+    forcePathStyle: true,
 })
 
 /**
