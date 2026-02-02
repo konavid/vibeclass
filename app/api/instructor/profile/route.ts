@@ -281,10 +281,10 @@ export async function PUT(request: NextRequest) {
         docYoutubeEmail: updatedApplication?.docYoutubeEmail || null
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('강사 프로필 수정 실패:', error)
     return NextResponse.json(
-      { error: '프로필 수정에 실패했습니다' },
+      { error: `프로필 수정 실패: ${error.message || '알 수 없는 오류'}` },
       { status: 500 }
     )
   }
