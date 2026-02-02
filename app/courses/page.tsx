@@ -11,8 +11,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const typeDesc = type === 'online'
     ? '실시간 Zoom 화상 강의로 어디서든 참여하세요.'
     : type === 'offline'
-    ? '현장에서 직접 만나는 오프라인 교육 프로그램.'
-    : '전문 강사진과 함께하는 온라인/오프라인 교육 프로그램.'
+      ? '현장에서 직접 만나는 오프라인 교육 프로그램.'
+      : '전문 강사진과 함께하는 온라인/오프라인 교육 프로그램.'
 
   return {
     title: `${typeTitle} | 바이브 클래스`,
@@ -28,9 +28,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }
 }
 
-// 페이지 캐싱 비활성화 - 항상 최신 데이터 표시
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// 페이지 캐싱 활성화 - 5분마다 갱신 (ISR)
+// 성능 개선: 매번 DB 쿼리 대신 캐시된 페이지 제공
+export const revalidate = 300
 
 async function getCategories() {
   return await prisma.category.findMany({
@@ -70,6 +70,7 @@ async function getCourses(categoryId?: string, courseType?: string, isFree?: boo
           status: { in: ['scheduled', 'ongoing'] },
         },
         orderBy: { cohort: 'desc' },
+        take: 1, // 최신 스케줄 1개만 조회 (성능 최적화)
         include: {
           _count: {
             select: {
@@ -144,21 +145,19 @@ export default async function CoursesPage({
             <div className="flex flex-wrap justify-center gap-3 mb-6">
               <Link
                 href="/courses"
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                  !courseType && !isFreeFilter
-                    ? 'bg-white text-gray-900 shadow-lg'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
-                }`}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${!courseType && !isFreeFilter
+                  ? 'bg-white text-gray-900 shadow-lg'
+                  : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                  }`}
               >
                 전체
               </Link>
               <Link
                 href="/courses?isFree=true"
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                  isFreeFilter
-                    ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
-                }`}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isFreeFilter
+                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/25'
+                  : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -167,11 +166,10 @@ export default async function CoursesPage({
               </Link>
               <Link
                 href="/courses?type=online"
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                  courseType === 'online'
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
-                }`}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${courseType === 'online'
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                  : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -180,11 +178,10 @@ export default async function CoursesPage({
               </Link>
               <Link
                 href="/courses?type=offline"
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
-                  courseType === 'offline'
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
-                }`}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${courseType === 'offline'
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                  : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -198,11 +195,10 @@ export default async function CoursesPage({
             <div className="flex flex-wrap justify-center gap-2">
               <Link
                 href={courseType ? `/courses?type=${courseType}` : '/courses'}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  !params.category
-                    ? 'bg-white/20 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${!params.category
+                  ? 'bg-white/20 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+                  }`}
               >
                 전체
               </Link>
@@ -210,11 +206,10 @@ export default async function CoursesPage({
                 <Link
                   key={category.id}
                   href={courseType ? `/courses?type=${courseType}&category=${category.id}` : `/courses?category=${category.id}`}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    params.category === category.id.toString()
-                      ? 'bg-white/20 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-white/10'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${params.category === category.id.toString()
+                    ? 'bg-white/20 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
                 >
                   {category.name}
                 </Link>
