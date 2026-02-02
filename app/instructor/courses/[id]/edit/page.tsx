@@ -106,7 +106,7 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
     descriptionImages: [] as string[],
     curriculumImages: [] as string[],
   })
-  const [categories, setCategories] = useState<{id: number, name: string}[]>([])
+  const [categories, setCategories] = useState<{ id: number, name: string }[]>([])
 
   // 기수 관리 상태
   const [schedules, setSchedules] = useState<Schedule[]>([])
@@ -124,8 +124,8 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
 
   // 차수(세션) 관리 상태
   const [expandedScheduleId, setExpandedScheduleId] = useState<number | null>(null)
-  const [sessions, setSessions] = useState<{[key: number]: Session[]}>({})
-  const [sessionsLoading, setSessionsLoading] = useState<{[key: number]: boolean}>({})
+  const [sessions, setSessions] = useState<{ [key: number]: Session[] }>({})
+  const [sessionsLoading, setSessionsLoading] = useState<{ [key: number]: boolean }>({})
   const [showSessionForm, setShowSessionForm] = useState(false)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
   const [sessionFormData, setSessionFormData] = useState({
@@ -478,7 +478,8 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
       }
     } catch (error: any) {
       console.error('이미지 업로드 실패:', error)
-      setMessage({ type: 'error', text: '이미지 업로드에 실패했습니다.' })
+      const errorMsg = error.response?.data?.error || '이미지 업로드에 실패했습니다.'
+      setMessage({ type: 'error', text: errorMsg })
     } finally {
       setUploading(false)
     }
@@ -615,7 +616,7 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       [{ 'color': [] }, { 'background': [] }],
       ['link', 'video'],
       ['clean']
@@ -778,11 +779,10 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
 
         {message && (
           <div
-            className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success'
+            className={`mb-6 p-4 rounded-lg ${message.type === 'success'
                 ? 'bg-green-50 text-green-800 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
-            }`}
+              }`}
           >
             {message.text}
           </div>
@@ -1427,7 +1427,7 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     <span className="flex items-center gap-1">
                       <svg className="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z"/>
+                        <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z" />
                       </svg>
                       카카오톡 단톡방 주소
                     </span>
@@ -1512,7 +1512,7 @@ export default function InstructorCourseEditPage({ params }: { params: Promise<{
                             onClick={(e) => e.stopPropagation()}
                           >
                             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z"/>
+                              <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z" />
                             </svg>
                             카톡방
                           </a>

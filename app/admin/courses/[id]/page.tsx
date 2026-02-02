@@ -315,9 +315,10 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
         alert(data.error || '업로드에 실패했습니다')
         setPreviewUrl('')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('업로드 실패:', error)
-      alert('업로드에 실패했습니다')
+      const errorMsg = error.message || '업로드에 실패했습니다'
+      alert(errorMsg)
       setPreviewUrl('')
     } finally {
       setUploading(false)
@@ -529,7 +530,7 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       [{ 'color': [] }, { 'background': [] }],
       ['link', 'video'],
       ['clean']
@@ -870,11 +871,10 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
           <div className="flex gap-2">
             <button
               onClick={handleToggleStatus}
-              className={`px-4 py-2 rounded-md text-white font-medium ${
-                course.status === 'active'
+              className={`px-4 py-2 rounded-md text-white font-medium ${course.status === 'active'
                   ? 'bg-yellow-600 hover:bg-yellow-700'
                   : 'bg-green-600 hover:bg-green-700'
-              }`}
+                }`}
             >
               {course.status === 'active' ? '비활성화' : '활성화'}
             </button>
@@ -1017,7 +1017,7 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
 - 5-8주차: 실무 프로젝트 및 활용"
               />
               <p className="mt-2 text-xs text-gray-600">
-                💡 AI가 강의 설명과 커리큘럼을 생성할 때 이 지시사항을 참고합니다.<br/>
+                💡 AI가 강의 설명과 커리큘럼을 생성할 때 이 지시사항을 참고합니다.<br />
                 <strong>커리큘럼 생성 시</strong> 주차, 차수, 시간 정보를 포함하면 표 형식으로 구조화된 커리큘럼이 생성됩니다.
               </p>
             </div>
@@ -1562,11 +1562,10 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
               <div>
                 <h3 className="text-sm font-medium text-gray-500">상태</h3>
                 <p className="mt-1">
-                  <span className={`px-2 py-1 text-xs rounded ${
-                    course.status === 'active'
+                  <span className={`px-2 py-1 text-xs rounded ${course.status === 'active'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}>
+                    }`}>
                     {course.status === 'active' ? '활성' : '비활성'}
                   </span>
                 </p>
@@ -1675,7 +1674,7 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <span className="flex items-center gap-1">
                     <svg className="w-4 h-4 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z"/>
+                      <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z" />
                     </svg>
                     카카오톡 단톡방 주소
                     <span className="text-xs text-gray-500">(선택)</span>
@@ -1728,452 +1727,449 @@ export default function AdminCourseDetailPage({ params }: { params: Promise<{ id
               {course.schedules
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((schedule) => (
-              <div key={schedule.id} className="border-2 border-gray-200 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{schedule.cohort}기</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {new Date(schedule.startDate).toLocaleDateString('ko-KR')} ~ {new Date(schedule.endDate).toLocaleDateString('ko-KR')}
-                    </p>
-                    {schedule.meetLink && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                          </svg>
-                          Zoom
-                        </span>
-                        <a
-                          href={schedule.meetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline truncate max-w-md"
-                        >
-                          {schedule.meetLink}
-                        </a>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(schedule.meetLink!)
-                            alert('링크가 복사되었습니다!')
-                          }}
-                          className="p-1 text-gray-500 hover:text-gray-700"
-                          title="링크 복사"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                    {schedule.kakaoTalkLink && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z"/>
-                          </svg>
-                          카카오톡
-                        </span>
-                        <a
-                          href={schedule.kakaoTalkLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-yellow-600 hover:underline truncate max-w-md"
-                        >
-                          {schedule.kakaoTalkLink}
-                        </a>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(schedule.kakaoTalkLink!)
-                            alert('링크가 복사되었습니다!')
-                          }}
-                          className="p-1 text-gray-500 hover:text-gray-700"
-                          title="링크 복사"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 text-sm font-medium rounded ${
-                      schedule.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                      schedule.status === 'ongoing' ? 'bg-green-100 text-green-800' :
-                      schedule.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {schedule.status === 'scheduled' ? '예정' :
-                       schedule.status === 'ongoing' ? '진행중' :
-                       schedule.status === 'completed' ? '완료' : '취소'}
-                    </span>
-                    <span className="px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded">
-                      수강생 {schedule._count.enrollments}명
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => {
-                      setCurrentScheduleId(schedule.id)
-                      setShowSessionForm(true)
-                      setEditingSessionId(null)
-                      // 자동으로 다음 회차 번호 설정
-                      const nextSessionNumber = schedule.sessions.length
-                        ? Math.max(...schedule.sessions.map(s => s.sessionNumber)) + 1
-                        : 1
-                      setSessionForm({
-                        sessionNumber: nextSessionNumber.toString(),
-                        sessionDate: '',
-                        startTime: '',
-                        endTime: '',
-                        topic: '',
-                      })
-                    }}
-                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                  >
-                    회차 추가
-                  </button>
-                  <button
-                    onClick={() => handleViewStudents(schedule.id)}
-                    className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
-                  >
-                    수강생 보기
-                  </button>
-                  <button
-                    onClick={() => router.push(`/admin/materials/${schedule.id}`)}
-                    className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
-                  >
-                    자료실 관리
-                  </button>
-                  <button
-                    onClick={() => router.push(`/admin/slides/${schedule.id}`)}
-                    className="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
-                  >
-                    슬라이드 관리
-                  </button>
-                  <button
-                    onClick={() => router.push(`/admin/videos/${schedule.id}`)}
-                    className="px-3 py-1 text-sm bg-pink-100 text-pink-700 rounded hover:bg-pink-200"
-                  >
-                    영상 관리
-                  </button>
-                  <button
-                    onClick={() => handleEditSchedule(schedule)}
-                    className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
-                  >
-                    기수 수정
-                  </button>
-                  <button
-                    onClick={() => handleDeleteSchedule(schedule.id)}
-                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
-                  >
-                    기수 삭제
-                  </button>
-                </div>
-
-                {/* 회차 추가/수정 폼 - 이 기수에만 표시 */}
-                {showSessionForm && currentScheduleId === schedule.id && (
-                  <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      {editingSessionId ? '회차 수정' : '회차 추가'}
-                    </h3>
-                    <form onSubmit={handleSessionSubmit} className="space-y-4">
-                      <div className="grid grid-cols-4 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">회차</label>
-                          <input
-                            type="number"
-                            required
-                            value={sessionForm.sessionNumber}
-                            onChange={(e) => setSessionForm({ ...sessionForm, sessionNumber: e.target.value })}
-                            placeholder="1"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
-                          <input
-                            type="date"
-                            required
-                            value={sessionForm.sessionDate}
-                            onChange={(e) => setSessionForm({ ...sessionForm, sessionDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">시작 시간</label>
-                          <select
-                            required
-                            value={sessionForm.startTime}
-                            onChange={(e) => setSessionForm({ ...sessionForm, startTime: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                          >
-                            <option value="">선택하세요</option>
-                            {Array.from({ length: 48 }, (_, i) => {
-                              const hour = Math.floor(i / 2).toString().padStart(2, '0')
-                              const minute = i % 2 === 0 ? '00' : '30'
-                              return `${hour}:${minute}`
-                            }).map(time => (
-                              <option key={time} value={time}>{time}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">종료 시간</label>
-                          <select
-                            required
-                            value={sessionForm.endTime}
-                            onChange={(e) => setSessionForm({ ...sessionForm, endTime: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                          >
-                            <option value="">선택하세요</option>
-                            {Array.from({ length: 48 }, (_, i) => {
-                              const hour = Math.floor(i / 2).toString().padStart(2, '0')
-                              const minute = i % 2 === 0 ? '00' : '30'
-                              return `${hour}:${minute}`
-                            }).map(time => (
-                              <option key={time} value={time}>{time}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                  <div key={schedule.id} className="border-2 border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">주제</label>
-                        <input
-                          type="text"
-                          value={sessionForm.topic}
-                          onChange={(e) => setSessionForm({ ...sessionForm, topic: e.target.value })}
-                          placeholder="예: AI 기초 이론"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        >
-                          저장
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowSessionForm(false)
-                            setEditingSessionId(null)
-                            setCurrentScheduleId(null)
-                          }}
-                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                        >
-                          취소
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                {/* 회차 목록 */}
-                {schedule.sessions.length > 0 && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <h4 className="font-medium text-gray-900 mb-2">회차 목록</h4>
-                    <div className="space-y-2">
-                      {schedule.sessions.map((session) => (
-                        <div key={session.id} className="bg-white p-3 rounded border border-gray-200">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <span className="font-medium text-gray-900">{session.sessionNumber}회차</span>
-                              <span className="text-gray-600 ml-3">
-                                {new Date(session.sessionDate).toLocaleDateString('ko-KR')} {session.startTime} ~ {session.endTime}
-                              </span>
-                              {session.topic && (
-                                <span className="text-gray-500 ml-2">| {session.topic}</span>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              {!session.meetLink && (
-                                <button
-                                  onClick={() => handleCreateMeetLink(schedule.id, session.id)}
-                                  className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
-                                >
-                                  링크 생성
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleEditSession(schedule.id, session)}
-                                className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
-                              >
-                                수정
-                              </button>
-                              <button
-                                onClick={() => handleDeleteSession(schedule.id, session.id)}
-                                className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
-                              >
-                                삭제
-                              </button>
-                            </div>
+                        <h3 className="text-xl font-bold text-gray-900">{schedule.cohort}기</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {new Date(schedule.startDate).toLocaleDateString('ko-KR')} ~ {new Date(schedule.endDate).toLocaleDateString('ko-KR')}
+                        </p>
+                        {schedule.meetLink && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                              </svg>
+                              Zoom
+                            </span>
+                            <a
+                              href={schedule.meetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:underline truncate max-w-md"
+                            >
+                              {schedule.meetLink}
+                            </a>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(schedule.meetLink!)
+                                alert('링크가 복사되었습니다!')
+                              }}
+                              className="p-1 text-gray-500 hover:text-gray-700"
+                              title="링크 복사"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
                           </div>
-                          {session.meetLink && (
-                            <div className="text-xs text-gray-600 mt-1">
-                              <span className="font-medium">Zoom: </span>
-                              <a
-                                href={session.meetLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                {session.meetLink}
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        )}
+                        {schedule.kakaoTalkLink && (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3c-5.523 0-10 3.585-10 8.014 0 2.932 1.919 5.514 4.804 6.978l-1.218 4.505c-.108.4.348.727.702.504l5.256-3.469a11.47 11.47 0 0 0 .456.019c5.523 0 10-3.585 10-8.014S17.523 3 12 3z" />
+                              </svg>
+                              카카오톡
+                            </span>
+                            <a
+                              href={schedule.kakaoTalkLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-yellow-600 hover:underline truncate max-w-md"
+                            >
+                              {schedule.kakaoTalkLink}
+                            </a>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(schedule.kakaoTalkLink!)
+                                alert('링크가 복사되었습니다!')
+                              }}
+                              className="p-1 text-gray-500 hover:text-gray-700"
+                              title="링크 복사"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 text-sm font-medium rounded ${schedule.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                            schedule.status === 'ongoing' ? 'bg-green-100 text-green-800' :
+                              schedule.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                'bg-red-100 text-red-800'
+                          }`}>
+                          {schedule.status === 'scheduled' ? '예정' :
+                            schedule.status === 'ongoing' ? '진행중' :
+                              schedule.status === 'completed' ? '완료' : '취소'}
+                        </span>
+                        <span className="px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded">
+                          수강생 {schedule._count.enrollments}명
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                {/* 수강생 목록 */}
-                {viewingStudents === schedule.id && (
-                  <div className="mt-4 bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium text-gray-900">수강생 목록</h4>
+                    <div className="flex gap-2 mb-4">
                       <button
-                        onClick={() => setViewingStudents(null)}
-                        className="text-sm text-gray-600 hover:text-gray-900"
+                        onClick={() => {
+                          setCurrentScheduleId(schedule.id)
+                          setShowSessionForm(true)
+                          setEditingSessionId(null)
+                          // 자동으로 다음 회차 번호 설정
+                          const nextSessionNumber = schedule.sessions.length
+                            ? Math.max(...schedule.sessions.map(s => s.sessionNumber)) + 1
+                            : 1
+                          setSessionForm({
+                            sessionNumber: nextSessionNumber.toString(),
+                            sessionDate: '',
+                            startTime: '',
+                            endTime: '',
+                            topic: '',
+                          })
+                        }}
+                        className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                       >
-                        닫기
+                        회차 추가
+                      </button>
+                      <button
+                        onClick={() => handleViewStudents(schedule.id)}
+                        className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+                      >
+                        수강생 보기
+                      </button>
+                      <button
+                        onClick={() => router.push(`/admin/materials/${schedule.id}`)}
+                        className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+                      >
+                        자료실 관리
+                      </button>
+                      <button
+                        onClick={() => router.push(`/admin/slides/${schedule.id}`)}
+                        className="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
+                      >
+                        슬라이드 관리
+                      </button>
+                      <button
+                        onClick={() => router.push(`/admin/videos/${schedule.id}`)}
+                        className="px-3 py-1 text-sm bg-pink-100 text-pink-700 rounded hover:bg-pink-200"
+                      >
+                        영상 관리
+                      </button>
+                      <button
+                        onClick={() => handleEditSchedule(schedule)}
+                        className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
+                      >
+                        기수 수정
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSchedule(schedule.id)}
+                        className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      >
+                        기수 삭제
                       </button>
                     </div>
-                    {students.length === 0 ? (
-                      <p className="text-sm text-gray-500">수강생이 없습니다</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {students.map((enrollment) => (
-                          <div key={enrollment.id} className="bg-white p-3 rounded border border-gray-200">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-medium text-gray-900">{enrollment.user.name}</p>
-                                <p className="text-sm text-gray-600">{enrollment.user.email}</p>
-                                {enrollment.user.phone && (
-                                  <p className="text-sm text-gray-600">{enrollment.user.phone}</p>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <span className={`px-2 py-1 text-xs rounded ${
-                                  enrollment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                  enrollment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {enrollment.status === 'confirmed' ? '수강중' :
-                                   enrollment.status === 'completed' ? '수료' : '대기'}
-                                </span>
-                                {enrollment.payment && (
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {enrollment.payment.amount.toLocaleString()}원 ({enrollment.payment.method})
-                                  </p>
-                                )}
-                              </div>
+
+                    {/* 회차 추가/수정 폼 - 이 기수에만 표시 */}
+                    {showSessionForm && currentScheduleId === schedule.id && (
+                      <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                          {editingSessionId ? '회차 수정' : '회차 추가'}
+                        </h3>
+                        <form onSubmit={handleSessionSubmit} className="space-y-4">
+                          <div className="grid grid-cols-4 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">회차</label>
+                              <input
+                                type="number"
+                                required
+                                value={sessionForm.sessionNumber}
+                                onChange={(e) => setSessionForm({ ...sessionForm, sessionNumber: e.target.value })}
+                                placeholder="1"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">날짜</label>
+                              <input
+                                type="date"
+                                required
+                                value={sessionForm.sessionDate}
+                                onChange={(e) => setSessionForm({ ...sessionForm, sessionDate: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">시작 시간</label>
+                              <select
+                                required
+                                value={sessionForm.startTime}
+                                onChange={(e) => setSessionForm({ ...sessionForm, startTime: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                              >
+                                <option value="">선택하세요</option>
+                                {Array.from({ length: 48 }, (_, i) => {
+                                  const hour = Math.floor(i / 2).toString().padStart(2, '0')
+                                  const minute = i % 2 === 0 ? '00' : '30'
+                                  return `${hour}:${minute}`
+                                }).map(time => (
+                                  <option key={time} value={time}>{time}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">종료 시간</label>
+                              <select
+                                required
+                                value={sessionForm.endTime}
+                                onChange={(e) => setSessionForm({ ...sessionForm, endTime: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                              >
+                                <option value="">선택하세요</option>
+                                {Array.from({ length: 48 }, (_, i) => {
+                                  const hour = Math.floor(i / 2).toString().padStart(2, '0')
+                                  const minute = i % 2 === 0 ? '00' : '30'
+                                  return `${hour}:${minute}`
+                                }).map(time => (
+                                  <option key={time} value={time}>{time}</option>
+                                ))}
+                              </select>
                             </div>
                           </div>
-                        ))}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">주제</label>
+                            <input
+                              type="text"
+                              value={sessionForm.topic}
+                              onChange={(e) => setSessionForm({ ...sessionForm, topic: e.target.value })}
+                              placeholder="예: AI 기초 이론"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            >
+                              저장
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowSessionForm(false)
+                                setEditingSessionId(null)
+                                setCurrentScheduleId(null)
+                              }}
+                              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                            >
+                              취소
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {/* 회차 목록 */}
+                    {schedule.sessions.length > 0 && (
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <h4 className="font-medium text-gray-900 mb-2">회차 목록</h4>
+                        <div className="space-y-2">
+                          {schedule.sessions.map((session) => (
+                            <div key={session.id} className="bg-white p-3 rounded border border-gray-200">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <span className="font-medium text-gray-900">{session.sessionNumber}회차</span>
+                                  <span className="text-gray-600 ml-3">
+                                    {new Date(session.sessionDate).toLocaleDateString('ko-KR')} {session.startTime} ~ {session.endTime}
+                                  </span>
+                                  {session.topic && (
+                                    <span className="text-gray-500 ml-2">| {session.topic}</span>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  {!session.meetLink && (
+                                    <button
+                                      onClick={() => handleCreateMeetLink(schedule.id, session.id)}
+                                      className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+                                    >
+                                      링크 생성
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleEditSession(schedule.id, session)}
+                                    className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
+                                  >
+                                    수정
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteSession(schedule.id, session.id)}
+                                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                                  >
+                                    삭제
+                                  </button>
+                                </div>
+                              </div>
+                              {session.meetLink && (
+                                <div className="text-xs text-gray-600 mt-1">
+                                  <span className="font-medium">Zoom: </span>
+                                  <a
+                                    href={session.meetLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {session.meetLink}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 수강생 목록 */}
+                    {viewingStudents === schedule.id && (
+                      <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-medium text-gray-900">수강생 목록</h4>
+                          <button
+                            onClick={() => setViewingStudents(null)}
+                            className="text-sm text-gray-600 hover:text-gray-900"
+                          >
+                            닫기
+                          </button>
+                        </div>
+                        {students.length === 0 ? (
+                          <p className="text-sm text-gray-500">수강생이 없습니다</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {students.map((enrollment) => (
+                              <div key={enrollment.id} className="bg-white p-3 rounded border border-gray-200">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-medium text-gray-900">{enrollment.user.name}</p>
+                                    <p className="text-sm text-gray-600">{enrollment.user.email}</p>
+                                    {enrollment.user.phone && (
+                                      <p className="text-sm text-gray-600">{enrollment.user.phone}</p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <span className={`px-2 py-1 text-xs rounded ${enrollment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                        enrollment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                          'bg-gray-100 text-gray-800'
+                                      }`}>
+                                      {enrollment.status === 'confirmed' ? '수강중' :
+                                        enrollment.status === 'completed' ? '수료' : '대기'}
+                                    </span>
+                                    {enrollment.payment && (
+                                      <p className="text-sm text-gray-600 mt-1">
+                                        {enrollment.payment.amount.toLocaleString()}원 ({enrollment.payment.method})
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* 페이지네이션 */}
-          {course.schedules.length > itemsPerPage && (
-            <div className="mt-6 flex justify-center items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                이전
-              </button>
-
-              <div className="flex gap-1">
-                {(() => {
-                  const totalPages = Math.ceil(course.schedules.length / itemsPerPage)
-                  const maxPagesToShow = 7
-                  let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
-                  let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
-
-                  if (endPage - startPage + 1 < maxPagesToShow) {
-                    startPage = Math.max(1, endPage - maxPagesToShow + 1)
-                  }
-
-                  const pages = []
-
-                  // 첫 페이지
-                  if (startPage > 1) {
-                    pages.push(
-                      <button
-                        key={1}
-                        onClick={() => setCurrentPage(1)}
-                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                      >
-                        1
-                      </button>
-                    )
-                    if (startPage > 2) {
-                      pages.push(
-                        <span key="ellipsis-start" className="px-2 text-gray-500">...</span>
-                      )
-                    }
-                  }
-
-                  // 중간 페이지들
-                  for (let i = startPage; i <= endPage; i++) {
-                    pages.push(
-                      <button
-                        key={i}
-                        onClick={() => setCurrentPage(i)}
-                        className={`px-3 py-2 text-sm font-medium rounded-md ${
-                          currentPage === i
-                            ? 'bg-indigo-600 text-white'
-                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {i}
-                      </button>
-                    )
-                  }
-
-                  // 마지막 페이지
-                  if (endPage < totalPages) {
-                    if (endPage < totalPages - 1) {
-                      pages.push(
-                        <span key="ellipsis-end" className="px-2 text-gray-500">...</span>
-                      )
-                    }
-                    pages.push(
-                      <button
-                        key={totalPages}
-                        onClick={() => setCurrentPage(totalPages)}
-                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                      >
-                        {totalPages}
-                      </button>
-                    )
-                  }
-
-                  return pages
-                })()}
-              </div>
-
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(course.schedules.length / itemsPerPage), prev + 1))}
-                disabled={currentPage === Math.ceil(course.schedules.length / itemsPerPage)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                다음
-              </button>
+                ))}
             </div>
-          )}
-        </>
+
+            {/* 페이지네이션 */}
+            {course.schedules.length > itemsPerPage && (
+              <div className="mt-6 flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  이전
+                </button>
+
+                <div className="flex gap-1">
+                  {(() => {
+                    const totalPages = Math.ceil(course.schedules.length / itemsPerPage)
+                    const maxPagesToShow = 7
+                    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
+                    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
+
+                    if (endPage - startPage + 1 < maxPagesToShow) {
+                      startPage = Math.max(1, endPage - maxPagesToShow + 1)
+                    }
+
+                    const pages = []
+
+                    // 첫 페이지
+                    if (startPage > 1) {
+                      pages.push(
+                        <button
+                          key={1}
+                          onClick={() => setCurrentPage(1)}
+                          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                          1
+                        </button>
+                      )
+                      if (startPage > 2) {
+                        pages.push(
+                          <span key="ellipsis-start" className="px-2 text-gray-500">...</span>
+                        )
+                      }
+                    }
+
+                    // 중간 페이지들
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${currentPage === i
+                              ? 'bg-indigo-600 text-white'
+                              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                        >
+                          {i}
+                        </button>
+                      )
+                    }
+
+                    // 마지막 페이지
+                    if (endPage < totalPages) {
+                      if (endPage < totalPages - 1) {
+                        pages.push(
+                          <span key="ellipsis-end" className="px-2 text-gray-500">...</span>
+                        )
+                      }
+                      pages.push(
+                        <button
+                          key={totalPages}
+                          onClick={() => setCurrentPage(totalPages)}
+                          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                          {totalPages}
+                        </button>
+                      )
+                    }
+
+                    return pages
+                  })()}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(course.schedules.length / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil(course.schedules.length / itemsPerPage)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  다음
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
