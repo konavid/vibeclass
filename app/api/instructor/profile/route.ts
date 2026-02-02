@@ -127,24 +127,9 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // admin이면서 강사 정보가 없으면 수정 불가
-    if (!instructor) {
-      return NextResponse.json(
-        { error: '수정할 강사 프로필이 없습니다' },
-        { status: 400 }
-      )
-    }
+    // 강사 정보가 없으면 생성, 있으면 업데이트
+    let updatedInstructor;
 
-    const body = await request.json()
-    const {
-      name, phone, bio, expertise, imageUrl, youtubeUrl, instagramUrl, openChatUrl,
-      consultingPrice, consultingEnabled,
-      // 서류 정보
-      docName, docAddress, docPhone, docBankName, docBankAccount, docBankHolder,
-      docBankCopyUrl, docIdCopyUrl, docYoutubeEmail
-    } = body
-
-    // 업데이트할 데이터 구성
     const updateData: any = {}
     if (name !== undefined) updateData.name = name
     if (phone !== undefined) updateData.phone = phone
@@ -154,10 +139,34 @@ export async function PUT(request: NextRequest) {
     if (consultingPrice !== undefined) updateData.consultingPrice = parseInt(consultingPrice) || 0
     if (consultingEnabled !== undefined) updateData.consultingEnabled = consultingEnabled
 
-    const updatedInstructor = await prisma.instructor.update({
-      where: { id: instructor.id },
-      data: updateData
-    })
+    if (!instructor) {
+      if (isAdmin) {
+        // Admin인 경우 새로 생성
+        updatedInstructor = await prisma.instructor.create({
+          data: {
+            userId: parseInt(session.user.id),
+            name: name || session.user.name || '강사',
+            email: session.user.email || '',
+            phone: phone || null,
+            bio: bio || null,
+            expertise: expertise || null,
+            imageUrl: imageUrl || null,
+            consultingPrice: parseInt(consultingPrice) || 0,
+            consultingEnabled: consultingEnabled !== undefined ? consultingEnabled : false,
+          }
+        })
+      } else {
+        return NextResponse.json(
+          { error: '강사 정보가 존재하지 않습니다.' },
+          { status: 404 }
+        )
+      }
+    } else {
+      updatedInstructor = await prisma.instructor.update({
+        where: { id: instructor.id },
+        data: updateData
+      })
+    }
 
     // 프로필 이미지가 변경되면 User.image와 InstructorApplication.photoUrl도 함께 업데이트
     if (imageUrl !== undefined) {
@@ -210,13 +219,14 @@ export async function PUT(request: NextRequest) {
         })
       } else {
         // 없으면 생성 (어드민에서 직접 추가된 강사의 경우)
+        // instructor가 null일 수 있으므로 body 데이터나 기본값 사용
         await prisma.instructorApplication.create({
           data: {
             userId: parseInt(session.user.id),
-            name: instructor.name,
-            field: instructor.expertise || '강사',
-            bio: instructor.bio || '',
-            photoUrl: instructor.imageUrl || null,
+            name: updatedInstructor.name,
+            field: updatedInstructor.expertise || '강사',
+            bio: updatedInstructor.bio || '',
+            photoUrl: updatedInstructor.imageUrl || null,
             status: 'contracted', // 이미 강사로 등록된 상태
             privacyAgreed: true,
             ...applicationUpdateData
