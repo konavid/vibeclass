@@ -1,0 +1,17 @@
+{
+  "name": "Professor AI - 프로페서 AI",
+  "short_name": "Professor AI",
+  "description": "강사의 뇌를 복사한 AI 멘토와 24시간 학습하세요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
