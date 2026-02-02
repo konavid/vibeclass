@@ -150,20 +150,36 @@ export async function PUT(request: NextRequest) {
 
     if (!instructor) {
       if (isAdmin) {
-        // Admin인 경우 새로 생성
-        updatedInstructor = await prisma.instructor.create({
-          data: {
-            userId: parseInt(session.user.id),
-            name: name || session.user.name || '강사',
-            email: session.user.email || '',
-            phone: phone || null,
-            bio: bio || null,
-            expertise: expertise || null,
-            imageUrl: imageUrl || null,
-            consultingPrice: parseInt(consultingPrice) || 0,
-            consultingEnabled: consultingEnabled !== undefined ? consultingEnabled : false,
-          }
+        // 이미 이메일로 존재하는 강사가 있는지 확인
+        const existingInstructorByEmail = await prisma.instructor.findUnique({
+          where: { email: session.user.email }
         })
+
+        if (existingInstructorByEmail) {
+          // 이메일은 같지만 userId가 연결 안된 경우 -> 연결 및 업데이트
+          updatedInstructor = await prisma.instructor.update({
+            where: { id: existingInstructorByEmail.id },
+            data: {
+              userId: parseInt(session.user.id),
+              ...updateData
+            }
+          })
+        } else {
+          // Admin인 경우 새로 생성
+          updatedInstructor = await prisma.instructor.create({
+            data: {
+              userId: parseInt(session.user.id),
+              name: name || session.user.name || '강사',
+              email: session.user.email || '',
+              phone: phone || null,
+              bio: bio || null,
+              expertise: expertise || null,
+              imageUrl: imageUrl || null,
+              consultingPrice: parseInt(consultingPrice) || 0,
+              consultingEnabled: consultingEnabled !== undefined ? consultingEnabled : false,
+            }
+          })
+        }
       } else {
         return NextResponse.json(
           { error: '강사 정보가 존재하지 않습니다.' },
