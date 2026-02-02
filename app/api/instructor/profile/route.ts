@@ -130,6 +130,15 @@ export async function PUT(request: NextRequest) {
     // 강사 정보가 없으면 생성, 있으면 업데이트
     let updatedInstructor;
 
+    const body = await request.json()
+    const {
+      name, phone, bio, expertise, imageUrl, youtubeUrl, instagramUrl, openChatUrl,
+      consultingPrice, consultingEnabled,
+      // 서류 정보
+      docName, docAddress, docPhone, docBankName, docBankAccount, docBankHolder,
+      docBankCopyUrl, docIdCopyUrl, docYoutubeEmail
+    } = body
+
     const updateData: any = {}
     if (name !== undefined) updateData.name = name
     if (phone !== undefined) updateData.phone = phone
